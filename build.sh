@@ -1,16 +1,27 @@
 #!/bin/bash
 # Builds My Charm.app using only the Xcode Command Line Tools.
+#   bash build.sh              -> for this Mac's chip
+#   bash build.sh --universal  -> Apple Silicon + Intel (used for releases)
 set -euo pipefail
 cd "$(dirname "$0")"
 
 APP="build/My Charm.app"
-ARCH="$(uname -m)"   # arm64 (Apple Silicon) or x86_64 (Intel)
+BIN="$APP/Contents/MacOS/MyCharm"
 
 rm -rf build
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/Charms"
 
-echo "Compiling for $ARCH..."
-swiftc -O -target "$ARCH-apple-macos13.0" Sources/*.swift -o "$APP/Contents/MacOS/MyCharm"
+if [ "${1:-}" = "--universal" ]; then
+  echo "Compiling universal (arm64 + x86_64)..."
+  swiftc -O -target arm64-apple-macos13.0  Sources/*.swift -o build/MyCharm-arm64
+  swiftc -O -target x86_64-apple-macos13.0 Sources/*.swift -o build/MyCharm-x86_64
+  lipo -create build/MyCharm-arm64 build/MyCharm-x86_64 -output "$BIN"
+  rm build/MyCharm-arm64 build/MyCharm-x86_64
+else
+  ARCH="$(uname -m)"
+  echo "Compiling for $ARCH..."
+  swiftc -O -target "$ARCH-apple-macos13.0" Sources/*.swift -o "$BIN"
+fi
 
 cp Info.plist "$APP/Contents/Info.plist"
 
@@ -21,5 +32,4 @@ codesign --force --deep --sign - "$APP"
 
 echo ""
 echo "Done: $APP"
-echo "Run it:      open \"$APP\""
-echo "Install it:  mv \"$APP\" /Applications/"
+echo "Run it:      bash charm.sh"

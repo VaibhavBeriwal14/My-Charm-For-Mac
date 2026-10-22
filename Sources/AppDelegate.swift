@@ -60,6 +60,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// Supports:  MyCharm NIMBU_MIRCH   or   MyCharm --charm NIMBU_MIRCH
     private func applyLaunchArguments() {
+        // Used by install.sh: start automatically at login.
+        if CommandLine.arguments.contains("--enable-login-item"), SMAppService.mainApp.status != .enabled {
+            try? SMAppService.mainApp.register()
+        }
         let args = Array(CommandLine.arguments.dropFirst()).filter { !$0.hasPrefix("-NS") && !$0.hasPrefix("-Apple") }
         var name: String?
         if let i = args.firstIndex(of: "--charm"), i + 1 < args.count { name = args[i + 1] }

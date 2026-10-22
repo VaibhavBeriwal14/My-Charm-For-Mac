@@ -28,42 +28,47 @@ All settings are remembered between launches.
 
 ---
 
-## Requirements
+## Install (one line)
 
-- macOS 13 Ventura or later
-- Apple Silicon or Intel Mac
-- Xcode **Command Line Tools** (about 1 GB, free). Full Xcode is not needed.
+Open **Terminal** (press ⌘ Space, type *Terminal*, press Return), paste this, and press Return:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/VaibhavBeriwal14/My-Charm-For-Mac/main/install.sh | bash
+```
+
+That's it. The charm appears at the top of your screen within a few seconds, and a ✦ icon shows up in the menu bar.
+
+- Installs **My Charm** into your Applications folder and starts it
+- Turns on **Launch at Login**, so the charm comes back after a restart (switch off in the ✦ menu)
+- Leaves nothing in your Downloads folder
+- No Xcode, git or developer tools needed
+- **To update**, run the same command again
+
+**Start with a specific charm:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/VaibhavBeriwal14/My-Charm-For-Mac/main/install.sh | bash -s -- NIMBU_MIRCH
+```
+
+Requirements: macOS 13 Ventura or later, on an Apple Silicon or Intel Mac.
+
+> Curious what the installer does? Read [`install.sh`](install.sh). It's short and commented.
 
 ---
 
-## Install
+## Build from source (for developers)
+
+Needs the Xcode **Command Line Tools** (about 1 GB, free). Full Xcode is not needed.
 
 ```bash
-# 1. Install the Command Line Tools (skip if you already have them)
-xcode-select --install
-
-# 2. Download the code
+xcode-select --install        # skip if already installed
 git clone https://github.com/VaibhavBeriwal14/My-Charm-For-Mac.git
 cd My-Charm-For-Mac
-
-# 3. Build
 bash build.sh
-
-# 4. Run
-open "build/My Charm.app"
+bash charm.sh                 # runs it; also updates /Applications if you installed there
 ```
 
-You should see the charm hanging just below the menu bar, and a ✦ icon in the menu bar.
-
-**Keep it permanently** (optional):
-
-```bash
-mv "build/My Charm.app" /Applications/
-```
-
-Then open it from Applications and choose **✦ → Launch at Login**.
-
-> Once built, the app runs on its own. You don't need Terminal or the Command Line Tools to keep using it.
+Every push to `main` that changes the app code automatically builds a universal (Apple Silicon + Intel) app and publishes it as a [GitHub Release](../../releases). The one-line installer always downloads the newest release.
 
 ---
 
@@ -124,7 +129,8 @@ Put the image in this repo's `Charms/` folder and run `bash build.sh` again. Use
 ## Project structure
 
 ```
-my-charm/
+My-Charm-For-Mac/
+├── .github/workflows/release.yml  # auto-builds a release on every push
 ├── Sources/
 │   ├── main.swift          # app entry point
 │   ├── AppDelegate.swift   # overlay window, menu bar, focus timer, launch arguments
@@ -136,6 +142,7 @@ my-charm/
 ├── Charms/                 # images bundled into the app
 ├── Info.plist
 ├── build.sh                # builds "build/My Charm.app"
+├── install.sh              # one-line installer (curl … | bash)
 └── charm.sh                # restart the app with a chosen charm
 ```
 
@@ -158,7 +165,7 @@ Rebuild with `bash build.sh` after any code change.
 | `xcrun: error: invalid active developer path` | Run `xcode-select --install` |
 | Build fails after a macOS/Xcode update | `sudo xcode-select --reset`, then build again |
 | "Unknown charm" printed | Check the name matches the image filename. Run the app and look under **✦ → Charm** for the exact names |
-| Launch at Login shows an error | Move the app into `/Applications` first |
+| Launch at Login shows an error | Make sure the app is in `/Applications` (the one-line installer does this) |
 | Charm not visible | **✦ → Show Charm**, then **Reset Swing**, and check the Position slider |
 | macOS says the app can't be opened | Right-click the app → **Open**. This only happens if you downloaded a pre-built `.app` rather than building it yourself |
 

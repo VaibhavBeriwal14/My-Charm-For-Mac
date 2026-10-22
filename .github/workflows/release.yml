@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Sources/**"
+      - "Charms/**"
+      - "Info.plist"
+      - "build.sh"
+      - ".github/workflows/release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build universal app
+        run: bash build.sh --universal
+
+      - name: Zip app
+        run: |
+          cd build
+          ditto -c -k --keepParent "My Charm.app" ../MyCharm.zip
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v1.0.${{ github.run_number }}"
+          gh release create "$TAG" MyCharm.zip \
+            --title "My Charm $TAG" \
+            --notes "Automatic build from commit ${GITHUB_SHA::7}. Install or update with: curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/install.sh | bash" \
+            --latest
