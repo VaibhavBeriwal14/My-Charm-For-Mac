@@ -1,9 +1,8 @@
-# My Charm
+# My Charm: a swinging desktop charm for Mac
 
-A tiny macOS menu bar app that hangs a charm from the top of your screen on a swinging, physics-driven string. Flick it, drag it, brush past it with your cursor, or just let it sway while you work.
+**My Charm** is a free, open-source macOS menu bar app that hangs a lucky charm from the top of your screen on a physics-driven string. Flick it, drag it, or let it sway while you work.
 
-Comes with two charms built in, **NAZAR** (evil eye) and **NIMBU_MIRCH** (lemon & chillies), and you can add your own.
-
+It ships with an **evil eye (Nazar)** and a **Nimbu Mirch (lemon and green chillies)** charm, and you can turn **any image into a charm** in seconds: a photo, a logo, a pet, a lucky symbol. A free, build-it-yourself alternative to paid screen-charm apps.
 - Free and open source
 - Runs fully offline, no account, no tracking
 - Native Swift/AppKit, no dependencies, uses barely any CPU when the charm is at rest
