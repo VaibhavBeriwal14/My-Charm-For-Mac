@@ -43,8 +43,8 @@ All settings are remembered between launches.
 xcode-select --install
 
 # 2. Download the code
-git clone https://github.com/YOUR_GITHUB_USERNAME/my-charm.git
-cd my-charm
+git clone https://github.com/VaibhavBeriwal14/My-Charm-For-Mac.git
+cd My-Charm-For-Mac
 
 # 3. Build
 bash build.sh
