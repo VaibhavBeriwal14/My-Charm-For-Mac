@@ -7,6 +7,8 @@ final class CharmView: NSView {
     var charm: Charm { didSet { needsDisplay = true } }
     var style: StringStyle { didSet { needsDisplay = true } }
     var charmSize: CGFloat { didSet { needsDisplay = true } }
+    /// Text for the little widget hanging under the charm (focus timer). nil = hidden.
+    var timerText: String? { didSet { if timerText != oldValue { needsDisplay = true } } }
 
     private(set) var dragging = false
     private var dragTarget: CGPoint?
@@ -80,7 +82,7 @@ final class CharmView: NSView {
     private func invalidate() {
         var box = CGRect.null
         for p in rope.pos { box = box.union(CGRect(x: p.x, y: p.y, width: 1, height: 1)) }
-        let r = charmSize * 0.8
+        let r = timerText == nil ? charmSize * 0.8 : charmSize * 0.5 + 90
         let c = charmCenter
         box = box.union(CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)).insetBy(dx: -14, dy: -14)
         setNeedsDisplay(box.union(lastBox))
@@ -167,6 +169,7 @@ final class CharmView: NSView {
         ctx.setShadow(offset: CGSize(width: 0, height: -3), blur: 6,
                       color: NSColor.black.withAlphaComponent(0.3).cgColor)
         ctx.beginTransparencyLayer(auxiliaryInfo: nil)
+        let bottom: CGFloat
         if let img = charm.image {
             let ar = img.size.width / max(img.size.height, 1)
             let w = ar > 1 ? s : s * ar
@@ -174,11 +177,48 @@ final class CharmView: NSView {
             img.draw(in: CGRect(x: -w / 2, y: 0, width: w, height: h),
                      from: .zero, operation: .sourceOver, fraction: 1,
                      respectFlipped: true, hints: nil)
+            bottom = h
         } else {
             drawNazar(ctx, size: s)
+            bottom = s + 3
         }
+        if let text = timerText { drawTimerWidget(ctx, text: text, top: bottom) }
         ctx.endTransparencyLayer()
         ctx.restoreGState()
+    }
+
+    /// Pill-shaped timer hanging from the bottom of the charm. Drawn in the charm's
+    /// rotated coordinate space, so it swings, tilts and drags together with the charm.
+    private func drawTimerWidget(_ ctx: CGContext, text: String, top: CGFloat) {
+        let fontSize = max(11, min(17, charmSize * 0.15))
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .semibold),
+            .foregroundColor: NSColor.white,
+        ]
+        let str = NSAttributedString(string: text, attributes: attrs)
+        let ts = str.size()
+        let padX: CGFloat = fontSize * 0.75, padY: CGFloat = fontSize * 0.3
+        let w = ts.width + padX * 2, h = ts.height + padY * 2
+        let gap: CGFloat = 8
+
+        // short connector thread
+        ctx.setStrokeColor(NSColor(white: 0.85, alpha: 0.9).cgColor)
+        ctx.setLineWidth(1.2)
+        ctx.move(to: CGPoint(x: 0, y: top - 2))
+        ctx.addLine(to: CGPoint(x: 0, y: top + gap))
+        ctx.strokePath()
+
+        let pill = CGRect(x: -w / 2, y: top + gap, width: w, height: h)
+        let path = CGPath(roundedRect: pill, cornerWidth: h / 2, cornerHeight: h / 2, transform: nil)
+        ctx.addPath(path)
+        ctx.setFillColor(NSColor(srgbRed: 0.08, green: 0.09, blue: 0.14, alpha: 0.88).cgColor)
+        ctx.fillPath()
+        ctx.addPath(path)
+        ctx.setStrokeColor(NSColor.white.withAlphaComponent(0.25).cgColor)
+        ctx.setLineWidth(1)
+        ctx.strokePath()
+
+        str.draw(at: CGPoint(x: pill.minX + padX, y: pill.minY + padY))
     }
 
     /// Simple built-in evil-eye bead.

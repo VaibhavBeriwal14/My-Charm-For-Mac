@@ -342,7 +342,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             celebrate()
             return
         }
-        statusItem.button?.title = String(format: " %d:%02d", left / 60, left % 60)
+        let text = String(format: "%d:%02d", left / 60, left % 60)
+        statusItem.button?.title = " " + text
+        charmView.timerText = text            // widget hanging under the charm
     }
 
     private func stopFocus() {
@@ -350,6 +352,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         focusTimer = nil
         focusEnd = nil
         statusItem.button?.title = ""
+        charmView.timerText = nil
         refreshMenuState()
     }
 
@@ -359,6 +362,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if settings.hidden { toggleCharm() }
         charmView.kick()
         Chime.play()
+        charmView.timerText = "Done!"
+        perform(#selector(clearDoneBadge), with: nil, afterDelay: 6)
+    }
+
+    @objc private func clearDoneBadge() {
+        if focusEnd == nil { charmView.timerText = nil }   // don't hide a newly started timer
     }
 
     @objc private func testChime() {
